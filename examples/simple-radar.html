@@ -14,8 +14,9 @@
 </head>
 
 <body>
-    <h1>tech-radar-chart example</h1>
-    <svg id="radar"></svg>
+    <div style="max-width: 800px;max-height: 800px;">
+        <svg id="radar"></svg>
+    </div>
 
     <script type="module">
         import {setup_tech_radar_chart} from '../dist/bundle.js';
@@ -25,7 +26,6 @@
                 background: "#1d1d1d",
                 grid: "#ddd"
             },
-            title: "My Radar",
             quadrants: [
                 { name: "Datastores & Data Management" },
                 { name: "Platforms & Infrastructure" },

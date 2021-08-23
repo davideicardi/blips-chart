@@ -28,23 +28,17 @@ export function setup_tech_radar_chart(config) {
     ];
   
     const rings = [
-      { radius: 130 },
-      { radius: 220 },
-      { radius: 310 },
+      { radius: 170 },
+      { radius: 260 },
+      { radius: 340 },
       { radius: 400 }
     ];
   
-    const title_offset =
-      { x: -675, y: -420 };
-  
-    const footer_offset =
-      { x: -675, y: 420 };
-  
     const legend_offset = [
-      { x: 450, y: 90 },
-      { x: -675, y: 90 },
-      { x: -675, y: -310 },
-      { x: 450, y: -310 }
+      { x: 300, y: 300, rotate: -45 },
+      { x: -300, y: 300, rotate: 45 },
+      { x: -300, y: -300, rotate: -45 },
+      { x: 300, y: -300, rotate: 45 }
     ];
   
     function polar(cartesian) {
@@ -94,8 +88,8 @@ export function setup_tech_radar_chart(config) {
         r: rings[ring].radius
       };
       var cartesian_min = {
-        x: 15 * quadrants[quadrant].factor_x,
-        y: 15 * quadrants[quadrant].factor_y
+        x: 30 * quadrants[quadrant].factor_x,
+        y: 30 * quadrants[quadrant].factor_y
       };
       var cartesian_max = {
         x: rings[3].radius * quadrants[quadrant].factor_x,
@@ -104,13 +98,13 @@ export function setup_tech_radar_chart(config) {
       return {
         clipx: function(d) {
           var c = bounded_box(d, cartesian_min, cartesian_max);
-          var p = bounded_ring(polar(c), polar_min.r + 15, polar_max.r - 15);
+          var p = bounded_ring(polar(c), polar_min.r + 30, polar_max.r - 30);
           d.x = cartesian(p).x; // adjust data too!
           return d.x;
         },
         clipy: function(d) {
           var c = bounded_box(d, cartesian_min, cartesian_max);
-          var p = bounded_ring(polar(c), polar_min.r + 15, polar_max.r - 15);
+          var p = bounded_ring(polar(c), polar_min.r + 30, polar_max.r - 30);
           d.y = cartesian(p).y; // adjust data too!
           return d.y;
         },
@@ -162,22 +156,16 @@ export function setup_tech_radar_chart(config) {
     function translate(x, y) {
       return "translate(" + x + "," + y + ")";
     }
-  
-    function viewbox(quadrant) {
-      return [
-        Math.max(0, quadrants[quadrant].factor_x * 400) - 420,
-        Math.max(0, quadrants[quadrant].factor_y * 400) - 420,
-        440,
-        440
-      ].join(" ");
+
+    function rotate(angle) {
+      return "rotate(" + angle + ")";
     }
-  
-    const WIDTH = 1450;
-    const HEIGHT = 1000;
+
+    const WIDTH = 850;
+    const HEIGHT = 850;
     var svg = d3.select("svg#" + config.svg_id)
       .style("background-color", config.colors.background)
-      .attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`)
-      ;
+      .attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`);
   
     var radar = svg.append("g");
     radar.attr("transform", translate(WIDTH / 2, HEIGHT / 2));
@@ -207,42 +195,15 @@ export function setup_tech_radar_chart(config) {
         .style("stroke-width", 1);
       grid.append("text")
         .text(config.rings[i].name)
-        .attr("y", -rings[i].radius + 62)
+        .attr("y", -rings[i].radius + 30)
         .attr("text-anchor", "middle")
-        .style("fill", "#e5e5e5")
+        .style("fill", config.rings[i].text_color)
         .style("font-family", "Arial, Helvetica")
-        .style("font-size", 42)
+        .style("font-size", 22)
         .style("font-weight", "bold")
         .style("pointer-events", "none")
         .style("user-select", "none");
     }
-  
-    function legend_transform(quadrant, ring, index=null) {
-      var dx = ring < 2 ? 0 : 120;
-      var dy = (index == null ? -16 : index * 12);
-      if (ring % 2 == 1) {
-        dy = dy + 36 + segmented[quadrant][ring-1].length * 12;
-      }
-      return translate(
-        legend_offset[quadrant].x + dx,
-        legend_offset[quadrant].y + dy
-      );
-    }
-  
-    // title
-    radar.append("text")
-      .attr("transform", translate(title_offset.x, title_offset.y))
-      .text(config.title)
-      .style("font-family", "Arial, Helvetica")
-      .style("font-size", "34");
-
-    // footer
-    radar.append("text")
-      .attr("transform", translate(footer_offset.x, footer_offset.y))
-      .text("▲ moved up     ▼ moved down")
-      .attr("xml:space", "preserve")
-      .style("font-family", "Arial, Helvetica")
-      .style("font-size", "14");
 
     // legend
     var legend = radar.append("g");
@@ -250,53 +211,17 @@ export function setup_tech_radar_chart(config) {
       legend.append("text")
         .attr("transform", translate(
           legend_offset[quadrant].x,
-          legend_offset[quadrant].y - 45
-        ))
+          legend_offset[quadrant].y
+        ) + rotate(legend_offset[quadrant].rotate))
+        .attr("text-anchor", "middle")
         .text(config.quadrants[quadrant].name)
         .style("font-family", "Arial, Helvetica")
         .style("font-size", "22");
-      for (var ring = 0; ring < 4; ring++) {
-        legend.append("text")
-          .attr("transform", legend_transform(quadrant, ring))
-          .text(config.rings[ring].name)
-          .style("font-family", "Arial, Helvetica")
-          .style("font-size", "18")
-          .style("font-weight", "bold");
-        legend.selectAll(".legend" + quadrant + ring)
-          .data(segmented[quadrant][ring])
-          .enter()
-            .append("text")
-              .attr("class", "legend" + quadrant + ring)
-              .attr("transform", function(d, i) { return legend_transform(quadrant, ring, i); })
-              .text(function(d, i) { return d.id + ". " + d.label; })
-              .style("font-family", "Arial, Helvetica")
-              .style("font-size", "16");
-      }
     }
   
     // layer for entries
     var rink = radar.append("g")
       .attr("id", "rink");
-  
-    // rollover bubble (on top of everything else)
-    var bubble = radar.append("g")
-      .attr("id", "bubble")
-      .attr("x", 0)
-      .attr("y", 0)
-      .style("opacity", 0)
-      .style("pointer-events", "none")
-      .style("user-select", "none");
-    bubble.append("rect")
-      .attr("rx", 4)
-      .attr("ry", 4)
-      .style("fill", "#333");
-    bubble.append("text")
-      .style("font-family", "sans-serif")
-      .style("font-size", "18px")
-      .style("fill", "#fff");
-    bubble.append("path")
-      .attr("d", "M 0,0 10,0 5,8 z")
-      .style("fill", "#333");
   
     // draw blips on radar
     var blips = rink.selectAll(".blip")
