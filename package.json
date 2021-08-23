@@ -1,0 +1,21 @@
+{
+  "name": "tech-radar-chart",
+  "version": "1.0.0",
+  "description": "Tech Radar Chart using D3",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "example": "npx http-server ./examples/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "d3": "^7.0.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.0.4",
+    "rollup": "^2.56.3"
+  }
+}

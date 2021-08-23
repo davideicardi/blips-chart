@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>tech-radar-chart example</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <style type="text/css">
+        #radar text {
+            fill: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>tech-radar-chart example</h1>
+    <svg id="radar"></svg>
+
+    <script type="module">
+        import {setup_tech_radar_chart} from '../dist/bundle.js';
+        setup_tech_radar_chart({
+            svg_id: "radar",
+            colors: {
+                background: "#1d1d1d",
+                grid: "#fff",
+                inactive: "#ddd",
+                inactive_text: "#fff"
+            },
+            title: "My Radar",
+            quadrants: [
+                { name: "Datastores & Data Management" },
+                { name: "Platforms & Infrastructure" },
+                { name: "Patterns & Techniques" },
+                { name: "Languages & Frameworks" },
+            ],
+            rings: [
+                { name: "Adopt", color: "#f75258", text_color: "#fff" },
+                { name: "Trial", color: "#54f6d1", text_color: "#000" },
+                { name: "Assess", color: "#5371f7", text_color: "#fff" },
+                { name: "Hold", color: "#6f58c4", text_color: "#fff" }
+            ],
+            print_layout: true,
+            entries: [
+                // quadrant: 0,1,2,3 (counting clockwise, starting from bottom right)
+                // ring: 0,1,2,3 (starting from inside)
+                // moved: -1 = moved out (triangle pointing down), 0 = not moved (circle), 1 = moved in  (triangle pointing up)
+                {
+                    link: "http://www.google.com",
+                    label: ".NET",
+                    quadrant: 0,
+                    ring: 0,
+                    moved: 0
+                },
+                {
+                    label: "Kafka",
+                    quadrant: 1,
+                    ring: 2,
+                    moved: 1
+                },
+                {
+                    label: "Strapi",
+                    quadrant: 2,
+                    ring: 3,
+                    moved: -1
+                },
+                {
+                    label: "Deno",
+                    quadrant: 3,
+                    ring: 1,
+                    moved: 0
+                },
+                {
+                    label: "Docker",
+                    quadrant: 2,
+                    ring: 0,
+                    moved: 0
+                },
+            ],
+            // zoomed_quadrant: 1
+        });
+    </script>
+</body>
+
+</html>
