@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c",
-    "example": "npx http-server ./examples/",
+    "example": "npx http-server ./",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
