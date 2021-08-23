@@ -130,10 +130,8 @@ export function setup_tech_radar_chart(config) {
       var point = entry.segment.random();
       entry.x = point.x;
       entry.y = point.y;
-      entry.color = entry.active || config.print_layout ?
-        config.rings[entry.ring].color : config.colors.inactive;
-      entry.text_color = entry.active || config.print_layout ?
-        config.rings[entry.ring].text_color : config.colors.inactive_text;
+      entry.color = config.rings[entry.ring].color;
+      entry.text_color = config.rings[entry.ring].text_color
     }
   
     // partition entries according to segments
@@ -182,11 +180,7 @@ export function setup_tech_radar_chart(config) {
       ;
   
     var radar = svg.append("g");
-    if ("zoomed_quadrant" in config) {
-      svg.attr("viewBox", viewbox(config.zoomed_quadrant));
-    } else {
-      radar.attr("transform", translate(WIDTH / 2, HEIGHT / 2));
-    }
+    radar.attr("transform", translate(WIDTH / 2, HEIGHT / 2));
   
     var grid = radar.append("g");
   
@@ -211,18 +205,16 @@ export function setup_tech_radar_chart(config) {
         .style("fill", "none")
         .style("stroke", config.colors.grid)
         .style("stroke-width", 1);
-      if (config.print_layout) {
-        grid.append("text")
-          .text(config.rings[i].name)
-          .attr("y", -rings[i].radius + 62)
-          .attr("text-anchor", "middle")
-          .style("fill", "#e5e5e5")
-          .style("font-family", "Arial, Helvetica")
-          .style("font-size", 42)
-          .style("font-weight", "bold")
-          .style("pointer-events", "none")
-          .style("user-select", "none");
-      }
+      grid.append("text")
+        .text(config.rings[i].name)
+        .attr("y", -rings[i].radius + 62)
+        .attr("text-anchor", "middle")
+        .style("fill", "#e5e5e5")
+        .style("font-family", "Arial, Helvetica")
+        .style("font-size", 42)
+        .style("font-weight", "bold")
+        .style("pointer-events", "none")
+        .style("user-select", "none");
     }
   
     function legend_transform(quadrant, ring, index=null) {
@@ -237,52 +229,48 @@ export function setup_tech_radar_chart(config) {
       );
     }
   
-    // draw title and legend (only in print layout)
-    if (config.print_layout) {
-  
-      // title
-      radar.append("text")
-        .attr("transform", translate(title_offset.x, title_offset.y))
-        .text(config.title)
+    // title
+    radar.append("text")
+      .attr("transform", translate(title_offset.x, title_offset.y))
+      .text(config.title)
+      .style("font-family", "Arial, Helvetica")
+      .style("font-size", "34");
+
+    // footer
+    radar.append("text")
+      .attr("transform", translate(footer_offset.x, footer_offset.y))
+      .text("▲ moved up     ▼ moved down")
+      .attr("xml:space", "preserve")
+      .style("font-family", "Arial, Helvetica")
+      .style("font-size", "14");
+
+    // legend
+    var legend = radar.append("g");
+    for (var quadrant = 0; quadrant < 4; quadrant++) {
+      legend.append("text")
+        .attr("transform", translate(
+          legend_offset[quadrant].x,
+          legend_offset[quadrant].y - 45
+        ))
+        .text(config.quadrants[quadrant].name)
         .style("font-family", "Arial, Helvetica")
-        .style("font-size", "34");
-  
-      // footer
-      radar.append("text")
-        .attr("transform", translate(footer_offset.x, footer_offset.y))
-        .text("▲ moved up     ▼ moved down")
-        .attr("xml:space", "preserve")
-        .style("font-family", "Arial, Helvetica")
-        .style("font-size", "14");
-  
-      // legend
-      var legend = radar.append("g");
-      for (var quadrant = 0; quadrant < 4; quadrant++) {
+        .style("font-size", "22");
+      for (var ring = 0; ring < 4; ring++) {
         legend.append("text")
-          .attr("transform", translate(
-            legend_offset[quadrant].x,
-            legend_offset[quadrant].y - 45
-          ))
-          .text(config.quadrants[quadrant].name)
+          .attr("transform", legend_transform(quadrant, ring))
+          .text(config.rings[ring].name)
           .style("font-family", "Arial, Helvetica")
-          .style("font-size", "22");
-        for (var ring = 0; ring < 4; ring++) {
-          legend.append("text")
-            .attr("transform", legend_transform(quadrant, ring))
-            .text(config.rings[ring].name)
-            .style("font-family", "Arial, Helvetica")
-            .style("font-size", "18")
-            .style("font-weight", "bold");
-          legend.selectAll(".legend" + quadrant + ring)
-            .data(segmented[quadrant][ring])
-            .enter()
-              .append("text")
-                .attr("class", "legend" + quadrant + ring)
-                .attr("transform", function(d, i) { return legend_transform(quadrant, ring, i); })
-                .text(function(d, i) { return d.id + ". " + d.label; })
-                .style("font-family", "Arial, Helvetica")
-                .style("font-size", "16");
-        }
+          .style("font-size", "18")
+          .style("font-weight", "bold");
+        legend.selectAll(".legend" + quadrant + ring)
+          .data(segmented[quadrant][ring])
+          .enter()
+            .append("text")
+              .attr("class", "legend" + quadrant + ring)
+              .attr("transform", function(d, i) { return legend_transform(quadrant, ring, i); })
+              .text(function(d, i) { return d.id + ". " + d.label; })
+              .style("font-family", "Arial, Helvetica")
+              .style("font-size", "16");
       }
     }
   
@@ -310,57 +298,25 @@ export function setup_tech_radar_chart(config) {
       .attr("d", "M 0,0 10,0 5,8 z")
       .style("fill", "#333");
   
-    function showBubble(d) {
-      if (d.active || config.print_layout) {
-        var tooltip = d3.select("#bubble text")
-          .text(d.label);
-        var bbox = tooltip.node().getBBox();
-        d3.select("#bubble")
-          .attr("transform", translate(d.x - bbox.width / 2, d.y - 16))
-          .style("opacity", 0.8);
-        d3.select("#bubble rect")
-          .attr("x", -5)
-          .attr("y", -bbox.height)
-          .attr("width", bbox.width + 10)
-          .attr("height", bbox.height + 4);
-        d3.select("#bubble path")
-          .attr("transform", translate(bbox.width / 2 - 5, 3));
-      }
-    }
-  
-    function hideBubble(d) {
-      var bubble = d3.select("#bubble")
-        .attr("transform", translate(0,0))
-        .style("opacity", 0);
-    }
-  
     // draw blips on radar
     var blips = rink.selectAll(".blip")
       .data(config.entries)
       .enter()
         .append("g")
-          .attr("class", "blip")
-          .on("mouseover", showBubble)
-          .on("mouseout", hideBubble);
+          .attr("class", "blip");
   
     // configure each blip
     blips.each(function(d) {
       var blip = d3.select(this);
   
-      // blip link
-      if (!config.print_layout && d.active && d.hasOwnProperty("link")) {
-        blip = blip.append("a")
-          .attr("xlink:href", d.link);
-      }
-  
       // blip shape
       if (d.moved > 0) {
         blip.append("path")
-          .attr("d", "M -14,5 14,5 0,-16 z") // triangle pointing up
+          .attr("d", "M -14,10 14,10 0,-14 z") // triangle pointing up
           .style("fill", d.color);
       } else if (d.moved < 0) {
         blip.append("path")
-          .attr("d", "M -14,-10 14,-10 0,14 z") // triangle pointing down
+          .attr("d", "M -14,-14 14,-14 0,10 z") // triangle pointing down
           .style("fill", d.color);
       } else {
         blip.append("circle")
@@ -369,18 +325,16 @@ export function setup_tech_radar_chart(config) {
       }
   
       // blip text
-      if (d.active || config.print_layout) {
-        var blip_text = config.print_layout ? d.id : d.label.match(/[a-z]/i);
-        blip.append("text")
-          .text(blip_text)
-          .attr("y", 3)
-          .attr("text-anchor", "middle")
-          .style("fill", d.text_color)
-          .style("font-family", "Arial, Helvetica")
-          .style("font-size", "14px")
-          .style("pointer-events", "none")
-          .style("user-select", "none");
-      }
+      blip.append("text")
+        .text(d.label)
+        .attr("y", 23)
+        .attr("text-anchor", "middle")
+        .style("fill", d.text_color)
+        .style("font-family", "Arial, Helvetica")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .style("pointer-events", "none")
+        .style("user-select", "none");
     });
   
     // make sure that blips stay inside their segment
