@@ -1,4 +1,4 @@
-# tech-radar-chart
+# blips-chart
 
 Tech Radar Chart using D3.js
 
