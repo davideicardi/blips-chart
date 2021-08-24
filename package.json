@@ -14,6 +14,9 @@
     "url": "git+https://github.com/davideicardi/blips-chart.git"
   },
   "homepage": "https://github.com/davideicardi/blips-chart",
+  "bugs": {
+    "url": "https://github.com/davideicardi/blips-chart/issues"
+  },
   "author": "Davide Icardi",
   "license": "ISC",
   "engines": {
