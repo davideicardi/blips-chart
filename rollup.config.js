@@ -4,7 +4,7 @@ export default {
     input: 'src/main.js',
     output: {
         name: "tech_radar_chart",
-        file: 'dist/bundle.js',
+        file: 'dist/tech-radar-chart.js',
         format: 'es'
     },
     plugins: [nodeResolve()]
