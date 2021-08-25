@@ -4,33 +4,29 @@
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tech-radar-chart example</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <style type="text/css">
-        #radar text {
-            fill: #fff;
-        }
-    </style>
 </head>
 
 <body>
-    <div style="max-width: 800px;max-height: 800px;">
+    <div style="max-width: 100%;max-height: 100%;">
         <svg id="radar"></svg>
     </div>
 
     <script type="module">
-        import {setup_tech_radar_chart} from '../dist/blips-chart.js';
-        setup_tech_radar_chart({
+        import {create_chart} from '../dist/blips-chart.js';
+        create_chart({
             svg_id: "radar",
             colors: {
                 background: "#1d1d1d",
                 grid: "#ddd"
             },
             quadrants: [
-                { name: "Datastores & Data Management" },
-                { name: "Platforms & Infrastructure" },
-                { name: "Patterns & Techniques" },
-                { name: "Languages & Frameworks" },
+                { name: "DATA", text_color: "#ddd" },
+                { name: "PLATFORMS", text_color: "#ddd" },
+                { name: "PATTERNS", text_color: "#ddd" },
+                { name: "LANGUAGES", text_color: "#ddd" },
             ],
             rings: [
                 { name: "ADOPT", color: "#f75258", text_color: "#f75258" },
@@ -39,42 +35,64 @@
                 { name: "HOLD", color: "#6f58c4", text_color: "#6f58c4" }
             ],
             entries: [
-                // quadrant: 0,1,2,3 (counting clockwise, starting from bottom right)
-                // ring: 0,1,2,3 (starting from inside)
                 // moved: -1 = moved out (triangle pointing down), 0 = not moved (circle), 1 = moved in  (triangle pointing up)
                 {
-                    link: "http://www.google.com",
-                    label: ".NET",
-                    quadrant: 0,
-                    ring: 0,
+                    name: "azuredevops",
+                    title: "Azure DevOps",
+                    quadrant: "PLATFORMS",
+                    ring: "HOLD",
                     moved: 0
                 },
                 {
-                    label: "Kafka",
-                    quadrant: 1,
-                    ring: 2,
-                    moved: 1
+                    name: "dotnetcore",
+                    title: ".NET Core",
+                    quadrant: "LANGUAGES",
+                    ring: "ADOPT",
+                    moved: 0
                 },
                 {
-                    label: "Strapi",
-                    quadrant: 2,
-                    ring: 3,
+                    name: "eventsourcing",
+                    title: "EventSourcing",
+                    quadrant: "PATTERNS",
+                    ring: "TRIAL",
                     moved: -1
                 },
                 {
-                    label: "Deno",
-                    quadrant: 3,
-                    ring: 1,
+                    name: "cqrs",
+                    title: "CQRS",
+                    quadrant: "PATTERNS",
+                    ring: "ADOPT",
                     moved: 0
                 },
                 {
-                    label: "Docker",
-                    quadrant: 2,
-                    ring: 0,
+                    name: "kafka",
+                    title: "Kafka",
+                    quadrant: "DATA",
+                    ring: "TRIAL",
+                    moved: 1
+                },
+                {
+                    name: "strapi",
+                    title: "Strapi",
+                    quadrant: "DATA",
+                    ring: "ASSESS",
+                    moved: -1
+                },
+                {
+                    name: "deno",
+                    title: "Deno",
+                    quadrant: "LANGUAGES",
+                    ring: "ASSESS",
+                    moved: 0
+                },
+                {
+                    name: "docker",
+                    title: "Docker",
+                    quadrant: "PLATFORMS",
+                    ring: "ADOPT",
                     moved: 0
                 },
             ],
-            // zoomed_quadrant: 1
         });
     </script>
 </body>
