@@ -1,3 +1,5 @@
-examples/
-test/
+node_modules
+examples
+docs
+tests
 rollup.config.js

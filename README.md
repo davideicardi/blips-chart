@@ -2,6 +2,8 @@
 
 Tech Radar Chart using D3.js
 
+![screenshot](https://raw.github.com/davideicardi/blips-chart/master/docs/blips-chart.png)
+
 ## Usage
 
 ```html
