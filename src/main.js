@@ -271,6 +271,17 @@ export function create_chart(config) {
       .style("font-family", "Arial, Helvetica")
       .style("font-size", "12px")
       .style("font-weight", "bold");
+
+    if (d.url) {
+      blip
+        .style("cursor", "pointer")
+        .on("click", function (e) {
+          window.open(
+            d.url,
+            '_blank'
+          );
+        });
+    }
   });
 
   // make sure that blips stay inside their segment
