@@ -2,7 +2,7 @@
 
 Tech Radar Chart using D3.js
 
-![screenshot](https://raw.github.com/davideicardi/blips-chart/main/docs/blips-chart.png)
+![screenshot](https://github.com/davideicardi/blips-chart/blob/main/docs/blibs-chart.png?raw=true)
 
 ## Usage
 
