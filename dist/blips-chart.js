@@ -3379,6 +3379,10 @@ function segment(quadrant, ring) {
   }
 }
 
+function onBlipClick(blib) {
+  location.href = blib.url;
+}
+
 function create_chart(config) {
   if (config.rings.length != 4) {
     throw Error("Expected 4 rings")
@@ -3386,6 +3390,7 @@ function create_chart(config) {
   if (config.quadrants.length != 4) {
     throw Error("Expected 4 quadrants")
   }
+  config.onBlipClick = config.onBlipClick || onBlipClick;
 
   const quadrant_by_name = {};
   for (let i = 0; i < 4; i++) {
@@ -3537,14 +3542,11 @@ function create_chart(config) {
       .style("font-size", "12px")
       .style("font-weight", "bold");
 
-    if (d.url) {
+    if (d.url && config.onBlipClick) {
       blip
         .style("cursor", "pointer")
         .on("click", function (e) {
-          window.open(
-            d.url,
-            '_blank'
-          );
+          config.onBlipClick(d);
         });
     }
   });
