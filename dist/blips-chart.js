@@ -3266,6 +3266,9 @@ function simulation(nodes) {
 
 // Forked version of https://opensource.zalando.com/tech-radar/
 
+const WIDTH = 850;
+const HEIGHT = 850;
+
 // custom random number generator, to make random sequence reproducible
 let seed = 42;
 function random() {
@@ -3441,13 +3444,7 @@ function create_chart(config) {
     return "rotate(" + angle + ")";
   }
 
-  const WIDTH = 850;
-  const HEIGHT = 850;
-  let svg = select("svg#" + config.svg_id)
-    .style("background-color", config.colors.background)
-    .attr("width", WIDTH)
-    .attr("height", HEIGHT);
-  //.attr("viewBox", `0 0 ${WIDTH} ${HEIGHT}`);
+  let svg = select("svg#" + config.svg_id);
 
   let radar = svg.append("g");
   radar.attr("transform", translate(WIDTH / 2, HEIGHT / 2));
