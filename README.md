@@ -96,4 +96,4 @@ Tech Radar Chart using D3.js
 </script>
 ```
 
-See [this](https://jsfiddle.net/603ejspt/) jsfiddle or `examples` folder for more details.
+See [this](https://jsfiddle.net/khjoyfrd/1/) jsfiddle or `examples` folder for more details.
