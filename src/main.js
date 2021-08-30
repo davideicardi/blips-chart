@@ -88,8 +88,8 @@ function segment(quadrant, ring) {
     r: rings[ring].radius
   };
   let cartesian_min = {
-    x: 30 * quadrants[quadrant].factor_x,
-    y: 30 * quadrants[quadrant].factor_y
+    x: 10 * quadrants[quadrant].factor_x,
+    y: 10 * quadrants[quadrant].factor_y
   };
   let cartesian_max = {
     x: rings[3].radius * quadrants[quadrant].factor_x,
@@ -98,13 +98,13 @@ function segment(quadrant, ring) {
   return {
     clipx: function (d) {
       let c = bounded_box(d, cartesian_min, cartesian_max);
-      let p = bounded_ring(polar(c), polar_min.r + 30, polar_max.r - 30);
+      let p = bounded_ring(polar(c), polar_min.r + 10, polar_max.r - 10);
       d.x = cartesian(p).x; // adjust data too!
       return d.x;
     },
     clipy: function (d) {
       let c = bounded_box(d, cartesian_min, cartesian_max);
-      let p = bounded_ring(polar(c), polar_min.r + 30, polar_max.r - 30);
+      let p = bounded_ring(polar(c), polar_min.r + 10, polar_max.r - 10);
       d.y = cartesian(p).y; // adjust data too!
       return d.y;
     },
@@ -199,6 +199,7 @@ export function create_chart(config) {
     .style("stroke-width", 1);
 
   // draw rings
+  const ringsLabels = [];
   for (let i = 0; i < rings.length; i++) {
     grid.append("circle")
       .attr("cx", 0)
@@ -207,16 +208,25 @@ export function create_chart(config) {
       .style("fill", "none")
       .style("stroke", config.colors.grid)
       .style("stroke-width", 1);
+    const ringLabelHeight = 18;
+    const ringLabelX = 0;
+    const ringLabelY = -rings[i].radius + ringLabelHeight;
     grid.append("text")
       .text(config.rings[i].name)
-      .attr("y", -rings[i].radius + 30)
+      .attr("y", ringLabelY)
       .attr("text-anchor", "middle")
       .style("fill", config.rings[i].text_color)
       .style("font-family", "Arial, Helvetica")
-      .style("font-size", 22)
+      .style("font-size", ringLabelHeight)
       .style("font-weight", "bold")
       .style("pointer-events", "none")
       .style("user-select", "none");
+    ringsLabels.push({
+      x: ringLabelX,
+      y: ringLabelY,
+      fx: ringLabelX,
+      fy: ringLabelY
+    })
   }
 
   // draw quadrants
@@ -231,7 +241,7 @@ export function create_chart(config) {
       .text(config.quadrants[quadrant].name)
       .style("fill", config.quadrants[quadrant].text_color)
       .style("font-family", "Arial, Helvetica")
-      .style("font-size", "22");
+      .style("font-size", "18");
   }
 
   // layer for entries
@@ -267,11 +277,11 @@ export function create_chart(config) {
     // blip text
     blip.append("text")
       .text(d.title)
-      .attr("y", 23)
+      .attr("y", 18)
       .attr("text-anchor", "middle")
       .style("fill", d.text_color)
       .style("font-family", "Arial, Helvetica")
-      .style("font-size", "12px")
+      .style("font-size", "10px")
       .style("font-weight", "bold");
 
     if (d.url && config.onBlipClick) {
@@ -292,8 +302,8 @@ export function create_chart(config) {
 
   // distribute blips, while avoiding collisions
   d3.forceSimulation()
-    .nodes(config.entries)
+    .nodes([...config.entries, ...ringsLabels])
     .velocityDecay(0.19) // magic number (found by experimentation)
-    .force("collision", d3.forceCollide().radius(12).strength(0.85))
+    .force("collision", d3.forceCollide().radius(20).strength(0.85))
     .on("tick", ticked);
 }

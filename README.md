@@ -10,7 +10,10 @@ Tech Radar Chart using D3.js
 <svg id="radar" version="1.1" viewBox="0 0 850 850"></svg>
 
 <script type="module">
-    import { create_chart } from 'https://cdn.jsdelivr.net/npm/blips-chart@1.5.0/dist/blips-chart.js';
+    // omit the version completely to get the latest one
+    // you should NOT use this in production
+    // instead use: https://cdn.jsdelivr.net/npm/blips-chart@YOUR_VERSION/dist/blips-chart.js
+    import { create_chart } from 'https://cdn.jsdelivr.net/npm/blips-chart/dist/blips-chart.js';
     const quadrants = [
         { name: "DATA", text_color: "#ddd" },
         { name: "PLATFORMS", text_color: "#ddd" },
@@ -96,4 +99,4 @@ Tech Radar Chart using D3.js
 </script>
 ```
 
-See [this](https://jsfiddle.net/khjoyfrd/1/) jsfiddle or `examples` folder for more details.
+See [this](https://jsfiddle.net/ehs3a0vw/) jsfiddle or `examples` folder for more details.
