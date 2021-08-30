@@ -3,6 +3,8 @@ import * as d3 from "d3";
 
 const WIDTH = 850;
 const HEIGHT = 850;
+const LEGEND_FONTSIZE = 18;
+const BLIPS_FONTSITE = 12;
 
 // custom random number generator, to make random sequence reproducible
 let seed = 42;
@@ -208,16 +210,15 @@ export function create_chart(config) {
       .style("fill", "none")
       .style("stroke", config.colors.grid)
       .style("stroke-width", 1);
-    const ringLabelHeight = 18;
     const ringLabelX = 0;
-    const ringLabelY = -rings[i].radius + ringLabelHeight;
+    const ringLabelY = -rings[i].radius + LEGEND_FONTSIZE;
     grid.append("text")
       .text(config.rings[i].name)
       .attr("y", ringLabelY)
       .attr("text-anchor", "middle")
       .style("fill", config.rings[i].text_color)
       .style("font-family", "Arial, Helvetica")
-      .style("font-size", ringLabelHeight)
+      .style("font-size", `${LEGEND_FONTSIZE}px`)
       .style("font-weight", "bold")
       .style("pointer-events", "none")
       .style("user-select", "none");
@@ -241,7 +242,7 @@ export function create_chart(config) {
       .text(config.quadrants[quadrant].name)
       .style("fill", config.quadrants[quadrant].text_color)
       .style("font-family", "Arial, Helvetica")
-      .style("font-size", "18");
+      .style("font-size", `${LEGEND_FONTSIZE}px`);
   }
 
   // layer for entries
@@ -281,7 +282,7 @@ export function create_chart(config) {
       .attr("text-anchor", "middle")
       .style("fill", d.text_color)
       .style("font-family", "Arial, Helvetica")
-      .style("font-size", "10px")
+      .style("font-size", `${BLIPS_FONTSITE}px`)
       .style("font-weight", "bold");
 
     if (d.url && config.onBlipClick) {
