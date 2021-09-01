@@ -213,7 +213,7 @@ export function create_chart(config) {
     const ringLabelX = 0;
     const ringLabelY = -rings[i].radius + LEGEND_FONTSIZE;
     grid.append("text")
-      .text(config.rings[i].name)
+      .text(config.rings[i].title || config.rings[i].name)
       .attr("y", ringLabelY)
       .attr("text-anchor", "middle")
       .style("fill", config.rings[i].text_color)
@@ -239,7 +239,7 @@ export function create_chart(config) {
         legend_offset[quadrant].y
       ) + rotate(legend_offset[quadrant].rotate))
       .attr("text-anchor", "middle")
-      .text(config.quadrants[quadrant].name)
+      .text(config.quadrants[quadrant].title || config.quadrants[quadrant].name)
       .style("fill", config.quadrants[quadrant].text_color)
       .style("font-family", "Arial, Helvetica")
       .style("font-size", `${LEGEND_FONTSIZE}px`);
@@ -284,6 +284,9 @@ export function create_chart(config) {
       .style("font-family", "Arial, Helvetica")
       .style("font-size", `${BLIPS_FONTSITE}px`)
       .style("font-weight", "bold");
+    // tooltip
+    blip.append("title")
+      .text(d.longTitle || d.title);
 
     if (d.url && config.onBlipClick) {
       blip
