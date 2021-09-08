@@ -5,6 +5,7 @@
   "main": "src/main.js",
   "type": "module",
   "scripts": {
+    "develop": "rollup -c -w",
     "build": "rollup -c",
     "example": "npx http-server ./",
     "test": "echo \"Error: no test specified\" && exit 1"
