@@ -2,109 +2,141 @@
 <html>
 
 <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>tech-radar-chart example</title>
-    <style>
-        body {
-            background-color: #1d1d1d;
-            height: 100vh;
-            width: 100vh;
-            padding: 0;
-            margin: 0;
-        }
-    </style>
+  <meta charset='utf-8'>
+  <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>tech-radar-chart example</title>
+  <style>
+    body {
+      background-color: #1d1d1d;
+      height: 100vh;
+      width: 100vh;
+      padding: 0;
+      margin: 0;
+    }
+    .legend {
+      font-size: 0.8em;
+    }
+    .legend ul, .legend li {
+      display: inline;
+      color: #ddd;
+      padding: 0.2em;
+    }
+  </style>
 </head>
 
 <body>
-    <svg id="radar" version="1.1" viewBox="0 0 850 850"></svg>
+  <svg id="radar" version="1.1" viewBox="0 0 850 850"></svg>
 
-    <script type="module">
-        import {create_chart} from '../dist/blips-chart.js';
-        create_chart({
-            svg_id: "radar",
-            colors: {
-                grid: "#ddd"
-            },
-            quadrants: [
-                { name: "DATA", title: "Datastores & Data Management", text_color: "#ddd" },
-                { name: "PLATFORMS", title: "Platforms & Infrastructure", text_color: "#ddd" },
-                { name: "PATTERNS", title: "Patterns & Techniques", text_color: "#ddd" },
-                { name: "LANGUAGES", title: "Languages & Frameworks", text_color: "#ddd" },
-            ],
-            rings: [
-                { name: "ADOPT", title: "ADOPT", color: "#f75258", text_color: "#f75258" },
-                { name: "TRIAL", title: "TRIAL", color: "#54f6d1", text_color: "#54f6d1" },
-                { name: "ASSESS", title: "ASSESS", color: "#5371f7", text_color: "#5371f7" },
-                { name: "HOLD", title: "HOLD", color: "#6f58c4", text_color: "#6f58c4" }
-            ],
-            entries: [
-                // moved: -1 = moved out (triangle pointing down), 0 = not moved (circle), 1 = moved in  (triangle pointing up)
-                {
-                    name: "azuredevops",
-                    title: "Azure DevOps",
-                    quadrant: "PLATFORMS",
-                    ring: "HOLD",
-                    moved: 0
-                },
-                {
-                    name: "dotnetcore",
-                    title: ".NET Core",
-                    quadrant: "LANGUAGES",
-                    ring: "ADOPT",
-                    moved: 0,
-                    url: "https://dotnet.microsoft.com/"
-                },
-                {
-                    name: "eventsourcing",
-                    title: "ES",
-                    longTitle: "Event Sourcing",
-                    quadrant: "PATTERNS",
-                    ring: "TRIAL",
-                    moved: -1
-                },
-                {
-                    name: "cqrs",
-                    title: "CQRS",
-                    longTitle: "Command and Query Responsibility Segregation",
-                    quadrant: "PATTERNS",
-                    ring: "ADOPT",
-                    moved: 0
-                },
-                {
-                    name: "kafka",
-                    title: "Kafka",
-                    longTitle: "Apache Kafka",
-                    quadrant: "DATA",
-                    ring: "TRIAL",
-                    moved: 1,
-                    url: "https://kafka.apache.org/"
-                },
-                {
-                    name: "strapi",
-                    title: "Strapi",
-                    quadrant: "DATA",
-                    ring: "ASSESS",
-                    moved: -1
-                },
-                {
-                    name: "deno",
-                    title: "Deno",
-                    quadrant: "LANGUAGES",
-                    ring: "ASSESS",
-                    moved: 0
-                },
-                {
-                    name: "docker",
-                    title: "Docker",
-                    quadrant: "PLATFORMS",
-                    ring: "ADOPT",
-                    moved: 0
-                },
-            ],
-        });
-    </script>
+  <script type="module">
+    import { create_chart } from '../dist/blips-chart.js';
+    create_chart({
+      svg_id: "radar",
+      colors: {
+        grid: "#ddd"
+      },
+      quadrants: [
+        { name: "DATA", title: "Datastores & Data Management", text_color: "#ddd" },
+        { name: "PLATFORMS", title: "Platforms & Infrastructure", text_color: "#ddd" },
+        { name: "PATTERNS", title: "Patterns & Techniques", text_color: "#ddd" },
+        { name: "LANGUAGES", title: "Languages & Frameworks", text_color: "#ddd" },
+      ],
+      rings: [
+        { name: "ADOPT", title: "ADOPT", color: "#f75258", text_color: "#f75258" },
+        { name: "TRIAL", title: "TRIAL", color: "#54f6d1", text_color: "#54f6d1" },
+        { name: "ASSESS", title: "ASSESS", color: "#5371f7", text_color: "#5371f7" },
+        { name: "HOLD", title: "HOLD", color: "#6f58c4", text_color: "#6f58c4" }
+      ],
+      entries: [
+        // moved: -1 = moved out (triangle pointing down), 0 = not moved (circle), 1 = moved in  (triangle pointing up)
+        {
+          name: "azuredevops",
+          title: "Azure DevOps",
+          quadrant: "PLATFORMS",
+          ring: "HOLD",
+          moved: 0
+        },
+        {
+          name: "dotnetcore",
+          title: ".NET Core",
+          quadrant: "LANGUAGES",
+          ring: "ADOPT",
+          moved: 0,
+          url: "https://dotnet.microsoft.com/"
+        },
+        {
+          name: "eventsourcing",
+          title: "ES",
+          longTitle: "Event Sourcing",
+          quadrant: "PATTERNS",
+          ring: "TRIAL",
+          moved: -1
+        },
+        {
+          name: "cqrs",
+          title: "CQRS",
+          longTitle: "Command and Query Responsibility Segregation",
+          quadrant: "PATTERNS",
+          ring: "ADOPT",
+          moved: 0
+        },
+        {
+          name: "kafka",
+          title: "Kafka",
+          longTitle: "Apache Kafka",
+          quadrant: "DATA",
+          ring: "TRIAL",
+          moved: 1,
+          url: "https://kafka.apache.org/"
+        },
+        {
+          name: "strapi",
+          title: "Strapi",
+          quadrant: "DATA",
+          ring: "ASSESS",
+          moved: -1
+        },
+        {
+          name: "deno",
+          title: "Deno",
+          quadrant: "LANGUAGES",
+          ring: "ASSESS",
+          moved: 0
+        },
+        {
+          name: "docker",
+          title: "Docker",
+          quadrant: "PLATFORMS",
+          ring: "ADOPT",
+          moved: 0
+        },
+      ],
+    });
+  </script>
+
+  <div class="legend">
+    <ul class="inline-list">
+      <li>
+        <svg width="16" height="16">
+          <path d="M 0,16 16,16 8,0 z" style="fill: #ddd;"></path>
+        </svg>
+        Moved up
+      </li>
+      <li>
+        <svg width="16" height="16">
+          <path d="M 0,0 16,0 8,16 z" style="fill: #ddd;"></path>
+        </svg>
+        Moved down
+      </li>
+      <li>
+        <svg width="16" height="16">
+          <circle r="8" cx="8" cy="8" fill="#ddd"></circle>
+        </svg>
+        Not moved
+      </li>
+    </ul>
+  </div>
+
 </body>
 
 </html>
