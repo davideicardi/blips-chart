@@ -269,7 +269,7 @@ EnterNode.prototype = {
   querySelectorAll: function(selector) { return this._parent.querySelectorAll(selector); }
 };
 
-function constant$1(x) {
+function constant$2(x) {
   return function() {
     return x;
   };
@@ -356,7 +356,7 @@ function selection_data(value, key) {
       parents = this._parents,
       groups = this._groups;
 
-  if (typeof value !== "function") value = constant$1(value);
+  if (typeof value !== "function") value = constant$2(value);
 
   for (var m = groups.length, update = new Array(m), enter = new Array(m), exit = new Array(m), j = 0; j < m; ++j) {
     var parent = parents[j],
@@ -1386,7 +1386,7 @@ function hsl2rgb(h, m1, m2) {
       : m1) * 255;
 }
 
-var constant = x => () => x;
+var constant$1 = x => () => x;
 
 function linear(a, d) {
   return function(t) {
@@ -1402,13 +1402,13 @@ function exponential(a, b, y) {
 
 function gamma(y) {
   return (y = +y) === 1 ? nogamma : function(a, b) {
-    return b - a ? exponential(a, b, y) : constant(isNaN(a) ? b : a);
+    return b - a ? exponential(a, b, y) : constant$1(isNaN(a) ? b : a);
   };
 }
 
 function nogamma(a, b) {
   var d = b - a;
-  return d ? linear(a, d) : constant(isNaN(a) ? b : a);
+  return d ? linear(a, d) : constant$1(isNaN(a) ? b : a);
 }
 
 var interpolateRgb = (function rgbGamma(y) {
@@ -2595,47 +2595,6 @@ function selection_transition(name) {
 selection.prototype.interrupt = selection_interrupt;
 selection.prototype.transition = selection_transition;
 
-function center(x, y) {
-  var nodes, strength = 1;
-
-  if (x == null) x = 0;
-  if (y == null) y = 0;
-
-  function force() {
-    var i,
-        n = nodes.length,
-        node,
-        sx = 0,
-        sy = 0;
-
-    for (i = 0; i < n; ++i) {
-      node = nodes[i], sx += node.x, sy += node.y;
-    }
-
-    for (sx = (sx / n - x) * strength, sy = (sy / n - y) * strength, i = 0; i < n; ++i) {
-      node = nodes[i], node.x -= sx, node.y -= sy;
-    }
-  }
-
-  force.initialize = function(_) {
-    nodes = _;
-  };
-
-  force.x = function(_) {
-    return arguments.length ? (x = +_, force) : x;
-  };
-
-  force.y = function(_) {
-    return arguments.length ? (y = +_, force) : y;
-  };
-
-  force.strength = function(_) {
-    return arguments.length ? (strength = +_, force) : strength;
-  };
-
-  return force;
-}
-
 function tree_add(d) {
   const x = +this._x.call(null, d),
       y = +this._y.call(null, d);
@@ -3043,6 +3002,113 @@ treeProto.visitAfter = tree_visitAfter;
 treeProto.x = tree_x;
 treeProto.y = tree_y;
 
+function constant(x) {
+  return function() {
+    return x;
+  };
+}
+
+function jiggle(random) {
+  return (random() - 0.5) * 1e-6;
+}
+
+function x(d) {
+  return d.x + d.vx;
+}
+
+function y(d) {
+  return d.y + d.vy;
+}
+
+function collide(radius) {
+  var nodes,
+      radii,
+      random,
+      strength = 1,
+      iterations = 1;
+
+  if (typeof radius !== "function") radius = constant(radius == null ? 1 : +radius);
+
+  function force() {
+    var i, n = nodes.length,
+        tree,
+        node,
+        xi,
+        yi,
+        ri,
+        ri2;
+
+    for (var k = 0; k < iterations; ++k) {
+      tree = quadtree(nodes, x, y).visitAfter(prepare);
+      for (i = 0; i < n; ++i) {
+        node = nodes[i];
+        ri = radii[node.index], ri2 = ri * ri;
+        xi = node.x + node.vx;
+        yi = node.y + node.vy;
+        tree.visit(apply);
+      }
+    }
+
+    function apply(quad, x0, y0, x1, y1) {
+      var data = quad.data, rj = quad.r, r = ri + rj;
+      if (data) {
+        if (data.index > node.index) {
+          var x = xi - data.x - data.vx,
+              y = yi - data.y - data.vy,
+              l = x * x + y * y;
+          if (l < r * r) {
+            if (x === 0) x = jiggle(random), l += x * x;
+            if (y === 0) y = jiggle(random), l += y * y;
+            l = (r - (l = Math.sqrt(l))) / l * strength;
+            node.vx += (x *= l) * (r = (rj *= rj) / (ri2 + rj));
+            node.vy += (y *= l) * r;
+            data.vx -= x * (r = 1 - r);
+            data.vy -= y * r;
+          }
+        }
+        return;
+      }
+      return x0 > xi + r || x1 < xi - r || y0 > yi + r || y1 < yi - r;
+    }
+  }
+
+  function prepare(quad) {
+    if (quad.data) return quad.r = radii[quad.data.index];
+    for (var i = quad.r = 0; i < 4; ++i) {
+      if (quad[i] && quad[i].r > quad.r) {
+        quad.r = quad[i].r;
+      }
+    }
+  }
+
+  function initialize() {
+    if (!nodes) return;
+    var i, n = nodes.length, node;
+    radii = new Array(n);
+    for (i = 0; i < n; ++i) node = nodes[i], radii[node.index] = +radius(node, i, nodes);
+  }
+
+  force.initialize = function(_nodes, _random) {
+    nodes = _nodes;
+    random = _random;
+    initialize();
+  };
+
+  force.iterations = function(_) {
+    return arguments.length ? (iterations = +_, force) : iterations;
+  };
+
+  force.strength = function(_) {
+    return arguments.length ? (strength = +_, force) : strength;
+  };
+
+  force.radius = function(_) {
+    return arguments.length ? (radius = typeof _ === "function" ? _ : constant(+_), initialize(), force) : radius;
+  };
+
+  return force;
+}
+
 // https://en.wikipedia.org/wiki/Linear_congruential_generator#Parameters_in_common_use
 const a = 1664525;
 const c = 1013904223;
@@ -3322,175 +3388,6 @@ function onBlipClick(blip) {
   location.href = blip.url;
 }
 
-// Code based on Elijah Meeks work:
-// - https://github.com/emeeks/d3-bboxCollide
-// - https://bl.ocks.org/emeeks/7669aa65a172bf69688ace5f6041223d
-function bboxCollide(bbox) {
-  function x(d) {
-    return d.x + d.vx;
-  }
-
-  function y(d) {
-    return d.y + d.vy;
-  }
-
-  function constant(x) {
-    return function () {
-      return x;
-    };
-  }
-
-  var nodes,
-    boundingBoxes,
-    strength = 1,
-    iterations = 1;
-
-  if (typeof bbox !== "function") {
-    bbox = constant(bbox === null ? [[0, 0][1]] : bbox);
-  }
-
-  function force() {
-    var i,
-      tree,
-      node,
-      xi,
-      yi,
-      bbi,
-      nx1,
-      ny1,
-      nx2,
-      ny2;
-
-    var cornerNodes = [];
-    nodes.forEach(function (d, i) {
-      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + (boundingBoxes[i][1][0] + boundingBoxes[i][0][0]) / 2, y: d.y + (boundingBoxes[i][0][1] + boundingBoxes[i][1][1]) / 2 });
-      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][0][0], y: d.y + boundingBoxes[i][0][1] });
-      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][0][0], y: d.y + boundingBoxes[i][1][1] });
-      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][1][0], y: d.y + boundingBoxes[i][0][1] });
-      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][1][0], y: d.y + boundingBoxes[i][1][1] });
-    });
-    var cn = cornerNodes.length;
-
-    for (var k = 0; k < iterations; ++k) {
-      tree = quadtree(cornerNodes, x, y).visitAfter(prepareCorners);
-
-      for (i = 0; i < cn; ++i) {
-        var nodeI = ~~(i / 5);
-        node = nodes[nodeI];
-        bbi = boundingBoxes[nodeI];
-        xi = node.x + node.vx;
-        yi = node.y + node.vy;
-        nx1 = xi + bbi[0][0];
-        ny1 = yi + bbi[0][1];
-        nx2 = xi + bbi[1][0];
-        ny2 = yi + bbi[1][1];
-        tree.visit(apply);
-      }
-    }
-
-    function apply(quad, x0, y0, x1, y1) {
-      var data = quad.data;
-      if (data) {
-        var bWidth = bbLength(bbi, 0),
-          bHeight = bbLength(bbi, 1);
-
-        if (data.node.index !== nodeI) {
-          var dataNode = data.node;
-          var bbj = boundingBoxes[dataNode.index],
-            dnx1 = dataNode.x + dataNode.vx + bbj[0][0],
-            dny1 = dataNode.y + dataNode.vy + bbj[0][1],
-            dnx2 = dataNode.x + dataNode.vx + bbj[1][0],
-            dny2 = dataNode.y + dataNode.vy + bbj[1][1],
-            dWidth = bbLength(bbj, 0),
-            dHeight = bbLength(bbj, 1);
-
-          if (nx1 <= dnx2 && dnx1 <= nx2 && ny1 <= dny2 && dny1 <= ny2) {
-
-            var xSize = [Math.min.apply(null, [dnx1, dnx2, nx1, nx2]), Math.max.apply(null, [dnx1, dnx2, nx1, nx2])];
-            var ySize = [Math.min.apply(null, [dny1, dny2, ny1, ny2]), Math.max.apply(null, [dny1, dny2, ny1, ny2])];
-
-            var xOverlap = bWidth + dWidth - (xSize[1] - xSize[0]);
-            var yOverlap = bHeight + dHeight - (ySize[1] - ySize[0]);
-
-            var xBPush = xOverlap * strength * (yOverlap / bHeight);
-            var yBPush = yOverlap * strength * (xOverlap / bWidth);
-
-            var xDPush = xOverlap * strength * (yOverlap / dHeight);
-            var yDPush = yOverlap * strength * (xOverlap / dWidth);
-
-            if ((nx1 + nx2) / 2 < (dnx1 + dnx2) / 2) {
-              node.vx -= xBPush;
-              dataNode.vx += xDPush;
-            }
-            else {
-              node.vx += xBPush;
-              dataNode.vx -= xDPush;
-            }
-            if ((ny1 + ny2) / 2 < (dny1 + dny2) / 2) {
-              node.vy -= yBPush;
-              dataNode.vy += yDPush;
-            }
-            else {
-              node.vy += yBPush;
-              dataNode.vy -= yDPush;
-            }
-          }
-
-        }
-        return;
-      }
-
-      return x0 > nx2 || x1 < nx1 || y0 > ny2 || y1 < ny1;
-    }
-
-  }
-
-  function prepareCorners(quad) {
-
-    if (quad.data) {
-      return quad.bb = boundingBoxes[quad.data.node.index]
-    }
-    quad.bb = [[0, 0], [0, 0]];
-    for (var i = 0; i < 4; ++i) {
-      if (quad[i] && quad[i].bb[0][0] < quad.bb[0][0]) {
-        quad.bb[0][0] = quad[i].bb[0][0];
-      }
-      if (quad[i] && quad[i].bb[0][1] < quad.bb[0][1]) {
-        quad.bb[0][1] = quad[i].bb[0][1];
-      }
-      if (quad[i] && quad[i].bb[1][0] > quad.bb[1][0]) {
-        quad.bb[1][0] = quad[i].bb[1][0];
-      }
-      if (quad[i] && quad[i].bb[1][1] > quad.bb[1][1]) {
-        quad.bb[1][1] = quad[i].bb[1][1];
-      }
-    }
-  }
-
-  function bbLength(bbox, heightWidth) {
-    return bbox[1][heightWidth] - bbox[0][heightWidth]
-  }
-
-  force.initialize = function (_) {
-    var i, n = (nodes = _).length; boundingBoxes = new Array(n);
-    for (i = 0; i < n; ++i) boundingBoxes[i] = bbox(nodes[i], i, nodes);
-  };
-
-  force.iterations = function (_) {
-    return arguments.length ? (iterations = +_, force) : iterations;
-  };
-
-  force.strength = function (_) {
-    return arguments.length ? (strength = +_, force) : strength;
-  };
-
-  force.bbox = function (_) {
-    return arguments.length ? (bbox = typeof _ === "function" ? _ : constant(+_), force) : bbox;
-  };
-
-  return force;
-}
-
 function create_chart(config) {
   if (config.rings.length != 4) {
     throw Error("Expected 4 rings")
@@ -3633,24 +3530,26 @@ function create_chart(config) {
     let blip = select(this);
 
     // blip shape
+    let blipShape;
     if (d.moved > 0) {
-      blip.append("path")
-        .attr("d", "M -8,8 8,8 0,-8 z") // triangle pointing up
-        .style("fill", d.color);
+      blipShape = blip.append("path")
+        .attr("d", "M -8,8 8,8 0,-8 z"); // triangle pointing up
     } else if (d.moved < 0) {
-      blip.append("path")
-        .attr("d", "M -8,-8 8,-8 0,8 z") // triangle pointing down
-        .style("fill", d.color);
+      blipShape = blip.append("path")
+        .attr("d", "M -8,-8 8,-8 0,8 z"); // triangle pointing down
     } else {
-      blip.append("circle")
-        .attr("r", 8)
-        .attr("fill", d.color);
+      blipShape = blip.append("circle")
+        .attr("r", 8);
     }
+    blipShape
+      .attr("transform", translate(0, -BLIPS_FONTSITE)) // put the shape above the text
+      .style("fill", d.color);
+
 
     // blip text
     blip.append("text")
       .text(d.title)
-      .attr("y", 17)
+      .attr("y", BLIPS_FONTSITE / 2) // put the text on the center
       .attr("text-anchor", "middle")
       .style("fill", d.text_color)
       .style("font-family", "Arial, Helvetica")
@@ -3672,22 +3571,12 @@ function create_chart(config) {
     // calculate blip total size
     d.boundingBox = blip.node().getBBox();
 
-    // draw bounding box (for debugging)
-    // console.log(boundingBox);
-    blip.append("rect")
-      .attr("x", d.boundingBox.x)
-      .attr("y", d.boundingBox.y)
-      .attr("width", d.boundingBox.width)
-      .attr("height", d.boundingBox.height)
+    // draw bounding box circle (for debugging collision)
+    blip.append("circle")
+      .attr("r", d.boundingBox.width / 2 + 2)
       .style("fill", "none")
       .style("stroke", "yellow")
-      .style("stroke-width", 1);
-    // bounding box as a circle
-    // blip.append("circle")
-    //   .attr("r", d.boundingBox.width / 2 * 1.2)
-    //   .style("fill", "none")
-    //   .style("stroke", "yellow")
-    //   .style("stroke-width", 1);    
+      .style("stroke-width", 1);    
   });
 
   // make sure that blips stay inside their segment
@@ -3697,19 +3586,11 @@ function create_chart(config) {
     });
   }
 
-  let forceCenter = center()
-    .strength(0.4);
-  let forceCollision = bboxCollide(function (blip) {
-    return [[blip.boundingBox.x, blip.boundingBox.y],[blip.boundingBox.width, blip.boundingBox.height]];
-    }).strength(0.3).iterations(3);
-
   // distribute blips, while avoiding collisions
   simulation()
     .nodes([...config.entries, ...ringsLabels])
-    .velocityDecay(0.4) // magic number (found by experimentation)
-    // .force("collision", d3.forceCollide().radius(d => d.boundingBox.width / 2 * 1.2).strength(0.85))
-    .force("center", forceCenter)
-    .force("collision", forceCollision)
+    .velocityDecay(0.2) // magic number (found by experimentation)
+    .force("collision", collide().radius(d => Math.max(20, d.boundingBox.width / 2 + 2)).strength(0.85))
     .on("tick", ticked);
 }
 
