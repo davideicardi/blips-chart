@@ -1,6 +1,6 @@
 {
   "name": "blips-chart",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "description": "Tech Radar Chart using D3.js",
   "main": "src/main.js",
   "type": "module",
