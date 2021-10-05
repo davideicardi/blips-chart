@@ -308,12 +308,12 @@ export function create_chart(config) {
     // calculate blip total size
     d.boundingBox = blip.node().getBBox();
 
-    // draw bounding box circle (for debugging collision)
-    blip.append("circle")
-      .attr("r", d.boundingBox.width / 2 + 2)
-      .style("fill", "none")
-      .style("stroke", "yellow")
-      .style("stroke-width", 1);    
+    // // draw bounding box circle (for debugging collision)
+    // blip.append("circle")
+    //   .attr("r", d.boundingBox.width / 2 + 2)
+    //   .style("fill", "none")
+    //   .style("stroke", "yellow")
+    //   .style("stroke-width", 1);    
   });
 
   // make sure that blips stay inside their segment
@@ -326,7 +326,7 @@ export function create_chart(config) {
   // distribute blips, while avoiding collisions
   d3.forceSimulation()
     .nodes([...config.entries, ...ringsLabels])
-    .velocityDecay(0.2) // magic number (found by experimentation)
+    .velocityDecay(0.19) // magic number (found by experimentation)
     .force("collision", d3.forceCollide().radius(d => Math.max(20, d.boundingBox.width / 2 + 2)).strength(0.85))
     .on("tick", ticked);
 }
