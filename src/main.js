@@ -1,5 +1,8 @@
+// Tech radar chart
 // Forked version of https://opensource.zalando.com/tech-radar/
+
 import * as d3 from "d3";
+import * as d3Quadtree from "d3-quadtree";
 
 const WIDTH = 850;
 const HEIGHT = 850;
@@ -119,8 +122,177 @@ function segment(quadrant, ring) {
   }
 }
 
-function onBlipClick(blib) {
-  location.href = blib.url;
+function onBlipClick(blip) {
+  location.href = blip.url;
+}
+
+// Code based on Elijah Meeks work:
+// - https://github.com/emeeks/d3-bboxCollide
+// - https://bl.ocks.org/emeeks/7669aa65a172bf69688ace5f6041223d
+function bboxCollide(bbox) {
+  function x(d) {
+    return d.x + d.vx;
+  }
+
+  function y(d) {
+    return d.y + d.vy;
+  }
+
+  function constant(x) {
+    return function () {
+      return x;
+    };
+  }
+
+  var nodes,
+    boundingBoxes,
+    strength = 1,
+    iterations = 1;
+
+  if (typeof bbox !== "function") {
+    bbox = constant(bbox === null ? [[0, 0][1, 1]] : bbox)
+  }
+
+  function force() {
+    var i,
+      tree,
+      node,
+      xi,
+      yi,
+      bbi,
+      nx1,
+      ny1,
+      nx2,
+      ny2
+
+    var cornerNodes = []
+    nodes.forEach(function (d, i) {
+      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + (boundingBoxes[i][1][0] + boundingBoxes[i][0][0]) / 2, y: d.y + (boundingBoxes[i][0][1] + boundingBoxes[i][1][1]) / 2 })
+      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][0][0], y: d.y + boundingBoxes[i][0][1] })
+      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][0][0], y: d.y + boundingBoxes[i][1][1] })
+      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][1][0], y: d.y + boundingBoxes[i][0][1] })
+      cornerNodes.push({ node: d, vx: d.vx, vy: d.vy, x: d.x + boundingBoxes[i][1][0], y: d.y + boundingBoxes[i][1][1] })
+    })
+    var cn = cornerNodes.length
+
+    for (var k = 0; k < iterations; ++k) {
+      tree = d3Quadtree.quadtree(cornerNodes, x, y).visitAfter(prepareCorners);
+
+      for (i = 0; i < cn; ++i) {
+        var nodeI = ~~(i / 5);
+        node = nodes[nodeI]
+        bbi = boundingBoxes[nodeI]
+        xi = node.x + node.vx
+        yi = node.y + node.vy
+        nx1 = xi + bbi[0][0]
+        ny1 = yi + bbi[0][1]
+        nx2 = xi + bbi[1][0]
+        ny2 = yi + bbi[1][1]
+        tree.visit(apply);
+      }
+    }
+
+    function apply(quad, x0, y0, x1, y1) {
+      var data = quad.data
+      if (data) {
+        var bWidth = bbLength(bbi, 0),
+          bHeight = bbLength(bbi, 1);
+
+        if (data.node.index !== nodeI) {
+          var dataNode = data.node
+          var bbj = boundingBoxes[dataNode.index],
+            dnx1 = dataNode.x + dataNode.vx + bbj[0][0],
+            dny1 = dataNode.y + dataNode.vy + bbj[0][1],
+            dnx2 = dataNode.x + dataNode.vx + bbj[1][0],
+            dny2 = dataNode.y + dataNode.vy + bbj[1][1],
+            dWidth = bbLength(bbj, 0),
+            dHeight = bbLength(bbj, 1)
+
+          if (nx1 <= dnx2 && dnx1 <= nx2 && ny1 <= dny2 && dny1 <= ny2) {
+
+            var xSize = [Math.min.apply(null, [dnx1, dnx2, nx1, nx2]), Math.max.apply(null, [dnx1, dnx2, nx1, nx2])]
+            var ySize = [Math.min.apply(null, [dny1, dny2, ny1, ny2]), Math.max.apply(null, [dny1, dny2, ny1, ny2])]
+
+            var xOverlap = bWidth + dWidth - (xSize[1] - xSize[0])
+            var yOverlap = bHeight + dHeight - (ySize[1] - ySize[0])
+
+            var xBPush = xOverlap * strength * (yOverlap / bHeight)
+            var yBPush = yOverlap * strength * (xOverlap / bWidth)
+
+            var xDPush = xOverlap * strength * (yOverlap / dHeight)
+            var yDPush = yOverlap * strength * (xOverlap / dWidth)
+
+            if ((nx1 + nx2) / 2 < (dnx1 + dnx2) / 2) {
+              node.vx -= xBPush
+              dataNode.vx += xDPush
+            }
+            else {
+              node.vx += xBPush
+              dataNode.vx -= xDPush
+            }
+            if ((ny1 + ny2) / 2 < (dny1 + dny2) / 2) {
+              node.vy -= yBPush
+              dataNode.vy += yDPush
+            }
+            else {
+              node.vy += yBPush
+              dataNode.vy -= yDPush
+            }
+          }
+
+        }
+        return;
+      }
+
+      return x0 > nx2 || x1 < nx1 || y0 > ny2 || y1 < ny1;
+    }
+
+  }
+
+  function prepareCorners(quad) {
+
+    if (quad.data) {
+      return quad.bb = boundingBoxes[quad.data.node.index]
+    }
+    quad.bb = [[0, 0], [0, 0]]
+    for (var i = 0; i < 4; ++i) {
+      if (quad[i] && quad[i].bb[0][0] < quad.bb[0][0]) {
+        quad.bb[0][0] = quad[i].bb[0][0]
+      }
+      if (quad[i] && quad[i].bb[0][1] < quad.bb[0][1]) {
+        quad.bb[0][1] = quad[i].bb[0][1]
+      }
+      if (quad[i] && quad[i].bb[1][0] > quad.bb[1][0]) {
+        quad.bb[1][0] = quad[i].bb[1][0]
+      }
+      if (quad[i] && quad[i].bb[1][1] > quad.bb[1][1]) {
+        quad.bb[1][1] = quad[i].bb[1][1]
+      }
+    }
+  }
+
+  function bbLength(bbox, heightWidth) {
+    return bbox[1][heightWidth] - bbox[0][heightWidth]
+  }
+
+  force.initialize = function (_) {
+    var i, n = (nodes = _).length; boundingBoxes = new Array(n);
+    for (i = 0; i < n; ++i) boundingBoxes[i] = bbox(nodes[i], i, nodes);
+  };
+
+  force.iterations = function (_) {
+    return arguments.length ? (iterations = +_, force) : iterations;
+  };
+
+  force.strength = function (_) {
+    return arguments.length ? (strength = +_, force) : strength;
+  };
+
+  force.bbox = function (_) {
+    return arguments.length ? (bbox = typeof _ === "function" ? _ : constant(+_), force) : bbox;
+  };
+
+  return force;
 }
 
 export function create_chart(config) {
@@ -212,7 +384,7 @@ export function create_chart(config) {
       .style("stroke-width", 1);
     const ringLabelX = 0;
     const ringLabelY = -rings[i].radius + LEGEND_FONTSIZE;
-    grid.append("text")
+    const ringLabel = grid.append("text")
       .text(config.rings[i].title || config.rings[i].name)
       .attr("y", ringLabelY)
       .attr("text-anchor", "middle")
@@ -222,11 +394,15 @@ export function create_chart(config) {
       .style("font-weight", "bold")
       .style("pointer-events", "none")
       .style("user-select", "none");
+    // calculate label size for collision detection
+    const boundingBox = ringLabel.node().getBBox();    
+
     ringsLabels.push({
       x: ringLabelX,
       y: ringLabelY,
       fx: ringLabelX,
-      fy: ringLabelY
+      fy: ringLabelY,
+      boundingBox: boundingBox
     })
   }
 
@@ -278,12 +454,13 @@ export function create_chart(config) {
     // blip text
     blip.append("text")
       .text(d.title)
-      .attr("y", 18)
+      .attr("y", 17)
       .attr("text-anchor", "middle")
       .style("fill", d.text_color)
       .style("font-family", "Arial, Helvetica")
       .style("font-size", `${BLIPS_FONTSITE}px`)
       .style("font-weight", "bold");
+
     // tooltip
     blip.append("title")
       .text(d.longTitle || d.title);
@@ -295,6 +472,26 @@ export function create_chart(config) {
           config.onBlipClick(d);
         });
     }
+
+    // calculate blip total size
+    d.boundingBox = blip.node().getBBox();
+
+    // draw bounding box (for debugging)
+    // console.log(boundingBox);
+    blip.append("rect")
+      .attr("x", d.boundingBox.x)
+      .attr("y", d.boundingBox.y)
+      .attr("width", d.boundingBox.width)
+      .attr("height", d.boundingBox.height)
+      .style("fill", "none")
+      .style("stroke", "yellow")
+      .style("stroke-width", 1);
+    // bounding box as a circle
+    // blip.append("circle")
+    //   .attr("r", d.boundingBox.width / 2 * 1.2)
+    //   .style("fill", "none")
+    //   .style("stroke", "yellow")
+    //   .style("stroke-width", 1);    
   });
 
   // make sure that blips stay inside their segment
@@ -304,10 +501,18 @@ export function create_chart(config) {
     })
   }
 
+  let forceCenter = d3.forceCenter()
+    .strength(0.4);
+  let forceCollision = bboxCollide(function (blip) {
+    return [[blip.boundingBox.x, blip.boundingBox.y],[blip.boundingBox.width, blip.boundingBox.height]];
+    }).strength(0.3).iterations(3);
+
   // distribute blips, while avoiding collisions
   d3.forceSimulation()
     .nodes([...config.entries, ...ringsLabels])
-    .velocityDecay(0.19) // magic number (found by experimentation)
-    .force("collision", d3.forceCollide().radius(20).strength(0.85))
+    .velocityDecay(0.4) // magic number (found by experimentation)
+    // .force("collision", d3.forceCollide().radius(d => d.boundingBox.width / 2 * 1.2).strength(0.85))
+    .force("center", forceCenter)
+    .force("collision", forceCollision)
     .on("tick", ticked);
 }
