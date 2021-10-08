@@ -7,6 +7,16 @@ Tech Radar Chart using D3.js
 ## Usage
 
 ```html
+<style>
+/* minimal style */
+#radar .grid {
+    stroke: black;
+}
+#radar .grid text {
+    stroke: none;
+}
+</style>
+
 <svg id="radar" version="1.1" viewBox="0 0 850 850"></svg>
 
 <script type="module">
@@ -15,16 +25,16 @@ Tech Radar Chart using D3.js
     // instead use: https://cdn.jsdelivr.net/npm/blips-chart@YOUR_VERSION/dist/blips-chart.js
     import { create_chart } from 'https://cdn.jsdelivr.net/npm/blips-chart/dist/blips-chart.js';
     const quadrants = [
-        { name: "DATA", text_color: "#ddd" },
-        { name: "PLATFORMS", text_color: "#ddd" },
-        { name: "PATTERNS", text_color: "#ddd" },
-        { name: "LANGUAGES", text_color: "#ddd" },
+        { name: "DATA" },
+        { name: "PLATFORMS" },
+        { name: "PATTERNS" },
+        { name: "LANGUAGES" },
     ];
     const rings = [
-        { name: "ADOPT", color: "#f75258", text_color: "#f75258" },
-        { name: "TRIAL", color: "#54f6d1", text_color: "#54f6d1" },
-        { name: "ASSESS", color: "#5371f7", text_color: "#5371f7" },
-        { name: "HOLD", color: "#6f58c4", text_color: "#6f58c4" }
+        { name: "ADOPT" },
+        { name: "TRIAL" },
+        { name: "ASSESS" },
+        { name: "HOLD" }
     ];
     const blips = [
         {
@@ -89,9 +99,6 @@ Tech Radar Chart using D3.js
 
     create_chart({
         svg_id: "radar",
-        colors: {
-            grid: "#ddd"
-        },
         quadrants: quadrants,
         rings: rings,
         entries: blips,
@@ -99,4 +106,43 @@ Tech Radar Chart using D3.js
 </script>
 ```
 
-See [this](https://jsfiddle.net/ehs3a0vw/) jsfiddle or `examples` folder for more details.
+Styles can be configured via CSS, here an example:
+
+```css
+#radar {
+    background-color: #1d1d1d;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#radar .grid {
+    stroke: #ddd;
+}
+#radar .grid text {
+    stroke: none;
+}
+#radar .grid .quadrants text {
+    fill: #ddd
+}
+#radar .ring-HOLD {
+    fill: #f75258;
+}
+#radar .ring-ASSESS {
+    fill: #6f58c4;
+}
+#radar .ring-TRIAL {
+    fill: #5371f7;
+}
+#radar .ring-ADOPT {
+    fill: #54f6d1;
+}
+#radar .moved .shape {
+    stroke: #f8f566;
+    stroke-width: 2px;
+}
+```
+
+
+### Examples
+
+- [jsfiddle](https://jsfiddle.net/ehs3a0vw/) 
+- `./examples` folder
