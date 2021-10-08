@@ -121,7 +121,7 @@ Styles can be configured via CSS, here an example:
     stroke: none;
 }
 #radar .grid .quadrants text {
-    fill: #ddd
+    fill: #ddd;
 }
 #radar .ring-HOLD {
     fill: #f75258;
@@ -144,5 +144,8 @@ Styles can be configured via CSS, here an example:
 
 ### Examples
 
-- [jsfiddle](https://jsfiddle.net/ehs3a0vw/) 
+- [jsfiddle](https://jsfiddle.net/z1mg0L5n/)
 - `./examples` folder
+    - minimal radar: `./examples/simple-radar.html`
+    - standard radar with style and legend: `./examples/standard-radar.html`
+    - many random blips: `./examples/random-blips.html`
