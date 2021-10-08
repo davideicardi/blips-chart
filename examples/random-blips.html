@@ -9,10 +9,64 @@
     <style>
         body {
             background-color: #1d1d1d;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #ddd;
             height: 100vh;
             width: 100vh;
             padding: 0;
             margin: 0;
+        }
+
+        #radar .grid {
+            stroke: #ddd;
+        }
+
+        #radar .grid text {
+            stroke: none;
+        }
+
+        #radar .grid .quadrants text {
+            fill: #ddd
+        }
+
+        #radar .ring-HOLD {
+            fill: #f75258;
+        }
+
+        #radar .ring-ASSESS {
+            fill: #6f58c4;
+        }
+
+        #radar .ring-TRIAL {
+            fill: #5371f7;
+        }
+
+        #radar .ring-ADOPT {
+            fill: #54f6d1;
+        }
+
+        #radar .moved .shape {
+            stroke: #f8f566;
+            stroke-width: 2px;
+        }
+
+        .legend {
+            font-size: 0.8em;
+        }
+
+        .legend ul,
+        .legend li {
+            display: inline;
+            padding: 0.2em;
+        }
+
+        .legend .shape {
+            fill: #ddd;
+        }
+
+        .legend .moved .shape {
+            stroke: #f8f566;
+            stroke-width: 2px;
         }
     </style>
 </head>
@@ -21,29 +75,29 @@
     <svg id="radar" version="1.1" viewBox="0 0 850 850"></svg>
 
     <script type="module">
-        import {create_chart} from '../dist/blips-chart.js';
+        import { create_chart } from '../dist/blips-chart.js';
 
         const words = "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit anim id est laborum".split(" ");
         function randomWord() {
             return words[randomNumber(0, words.length - 1)];
         }
 
-        function randomNumber(min, max) { 
+        function randomNumber(min, max) {
             return Math.floor(Math.random() * (max - min + 1) + min);
         }
 
         const quadrants = [
-                { name: "DATA", text_color: "#ddd" },
-                { name: "PLATFORMS", text_color: "#ddd" },
-                { name: "PATTERNS", text_color: "#ddd" },
-                { name: "LANGUAGES", text_color: "#ddd" },
-            ];
+            { name: "DATA" },
+            { name: "PLATFORMS" },
+            { name: "PATTERNS" },
+            { name: "LANGUAGES" },
+        ];
         const rings = [
-                { name: "ADOPT", color: "#f75258", text_color: "#f75258" },
-                { name: "TRIAL", color: "#54f6d1", text_color: "#54f6d1" },
-                { name: "ASSESS", color: "#5371f7", text_color: "#5371f7" },
-                { name: "HOLD", color: "#6f58c4", text_color: "#6f58c4" }
-            ];
+            { name: "ADOPT" },
+            { name: "TRIAL" },
+            { name: "ASSESS" },
+            { name: "HOLD" }
+        ];
 
         const numberOfBlips = 120;
         const blips = [];
@@ -62,9 +116,6 @@
 
         create_chart({
             svg_id: "radar",
-            colors: {
-                grid: "#ddd"
-            },
             quadrants: quadrants,
             rings: rings,
             entries: blips,

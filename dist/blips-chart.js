@@ -3384,6 +3384,14 @@ function segment(quadrant, ring) {
   }
 }
 
+function translate(x, y) {
+  return "translate(" + x + "," + y + ")";
+}
+
+function rotate(angle) {
+  return "rotate(" + angle + ")";
+}
+
 function onBlipClick(blip) {
   location.href = blip.url;
 }
@@ -3421,8 +3429,6 @@ function create_chart(config) {
     let point = entry.segment.random();
     entry.x = point.x;
     entry.y = point.y;
-    entry.color = config.rings[entry.ring_index].color;
-    entry.text_color = config.rings[entry.ring_index].text_color;
   }
 
   // partition entries according to segments
@@ -3438,57 +3444,50 @@ function create_chart(config) {
     segmented[entry.quadrant_index][entry.ring_index].push(entry);
   }
 
-  function translate(x, y) {
-    return "translate(" + x + "," + y + ")";
-  }
-
-  function rotate(angle) {
-    return "rotate(" + angle + ")";
-  }
-
   let svg = select("svg#" + config.svg_id);
 
   let radar = svg.append("g");
   radar.attr("transform", translate(WIDTH / 2, HEIGHT / 2));
 
-  let grid = radar.append("g");
+  let grid = radar.append("g")
+    .attr("class", "grid");
 
   // draw grid lines
   grid.append("line")
+    .attr("class", "axis axis-Y")
     .attr("x1", 0).attr("y1", -400)
     .attr("x2", 0).attr("y2", 400)
-    .style("stroke", config.colors.grid)
     .style("stroke-width", 1);
   grid.append("line")
+    .attr("class", "axis axis-X")
     .attr("x1", -400).attr("y1", 0)
     .attr("x2", 400).attr("y2", 0)
-    .style("stroke", config.colors.grid)
     .style("stroke-width", 1);
 
   // draw rings
+  const gridRings = grid.append("g")
+    .attr("class", "rings");
   const ringsLabels = [];
   for (let i = 0; i < rings.length; i++) {
-    grid.append("circle")
+    gridRings.append("circle")
       .attr("cx", 0)
       .attr("cy", 0)
       .attr("r", rings[i].radius)
       .style("fill", "none")
-      .style("stroke", config.colors.grid)
       .style("stroke-width", 1);
     const ringLabelX = 0;
     const ringLabelY = -rings[i].radius + LEGEND_FONTSIZE;
-    const ringLabel = grid.append("text")
+    const ringLabel = gridRings.append("text")
       .text(config.rings[i].title || config.rings[i].name)
+      .attr("class", `ring ring-${config.rings[i].name}`)
       .attr("y", ringLabelY)
       .attr("text-anchor", "middle")
-      .style("fill", config.rings[i].text_color)
-      .style("font-family", "Arial, Helvetica")
       .style("font-size", `${LEGEND_FONTSIZE}px`)
       .style("font-weight", "bold")
       .style("pointer-events", "none")
       .style("user-select", "none");
     // calculate label size for collision detection
-    const boundingBox = ringLabel.node().getBBox();    
+    const boundingBox = ringLabel.node().getBBox();
 
     ringsLabels.push({
       x: ringLabelX,
@@ -3500,30 +3499,29 @@ function create_chart(config) {
   }
 
   // draw quadrants
-  let legend = radar.append("g");
+  let quadrantsLegend = grid.append("g")
+    .attr("class", "quadrants");
   for (let quadrant = 0; quadrant < 4; quadrant++) {
-    legend.append("text")
+    quadrantsLegend.append("text")
       .attr("transform", translate(
         legend_offset[quadrant].x,
         legend_offset[quadrant].y
       ) + rotate(legend_offset[quadrant].rotate))
+      .attr("class", `quadrant quadrant-${config.quadrants[quadrant].name}`)
       .attr("text-anchor", "middle")
       .text(config.quadrants[quadrant].title || config.quadrants[quadrant].name)
-      .style("fill", config.quadrants[quadrant].text_color)
-      .style("font-family", "Arial, Helvetica")
       .style("font-size", `${LEGEND_FONTSIZE}px`);
   }
 
   // layer for entries
   let rink = radar.append("g")
-    .attr("id", "rink");
+    .attr("class", "blips");
 
   // draw blips on radar
   let blips = rink.selectAll(".blip")
     .data(config.entries)
     .enter()
-    .append("g")
-    .attr("class", "blip");
+    .append("g");
 
   // configure each blip
   blips.each(function (d) {
@@ -3531,28 +3529,30 @@ function create_chart(config) {
 
     // blip shape
     let blipShape;
+    let movedClass = "";
     if (d.moved > 0) {
       blipShape = blip.append("path")
-        .attr("d", "M -8,8 8,8 0,-8 z"); // triangle pointing up
+        .attr("d", "M -8,6 8,6 0,-10 z"); // triangle pointing up
+      movedClass = "moved";
     } else if (d.moved < 0) {
       blipShape = blip.append("path")
         .attr("d", "M -8,-8 8,-8 0,8 z"); // triangle pointing down
+      movedClass = "moved";
     } else {
       blipShape = blip.append("circle")
         .attr("r", 8);
     }
     blipShape
-      .attr("transform", translate(0, -BLIPS_FONTSITE)) // put the shape above the text
-      .style("fill", d.color);
+      .attr("transform", translate(0, -BLIPS_FONTSITE - 1)) // put the shape above the text
+      .attr("class", "shape");
 
+    blip.attr('class', `blip ring-${d.ring} quadrant-${d.quadrant} ${movedClass}`);
 
     // blip text
     blip.append("text")
       .text(d.title)
       .attr("y", BLIPS_FONTSITE / 2) // put the text on the center
       .attr("text-anchor", "middle")
-      .style("fill", d.text_color)
-      .style("font-family", "Arial, Helvetica")
       .style("font-size", `${BLIPS_FONTSITE}px`)
       .style("font-weight", "bold");
 
